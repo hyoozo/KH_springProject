@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 타입 별칭 주기위한 작업  -->
+	<typeAliases>
+		<typeAlias type="com.spring.client.board.vo.BoardVO" alias="board"/>
+		<typeAlias type="com.spring.client.reply.vo.ReplyVO" alias="reply"/>
+		<typeAlias type="com.spring.admin.login.vo.AdminLoginVO" alias="adminLogin"/>
+	</typeAliases>
+		<!-- 다른 VO가 있다면 위에 추가해서 사용하면 됨. -->
+</configuration>

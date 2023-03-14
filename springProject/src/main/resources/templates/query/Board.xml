@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.client.board.dao.BoardDao"><!--namespace 수정하기  -->
+	
+	<sql id="boardSearch">
+		<if test="search == 'b_title' ">
+			<![CDATA[ b_title LIKE '%' || #{keyword} || '%' ]]>
+		</if>
+		<if test="search == 'b_content' ">
+			<![CDATA[ b_content LIKE '%' || #{keyword} || '%' ]]>
+		</if>
+		<if test="search == 'b_name' ">
+			<![CDATA[ b_name LIKE '%' || #{keyword} || '%' ]]>
+		</if> 
+		<if test="search == 'b_date' ">
+			<![CDATA[ to_char(b_date, 'YYYY-MM-DD') between #{start_date} and #{end_date} ]]>
+		</if> 
+	</sql>
+	
+	<!-- 게시판 리스트 조회(페이징 처리와 검색 처리) 및 댓글 갯수 구하기 -->
+	<!-- 힌트(hint): 개발자가 데이터베이스에 어떤 방식으로 실행해 줘야 하는지를 명시하기 때문에 강제성을 부여한다.
+		구문: /*+로 시작하고 */ 로 종료된다.
+		/*+ INDEX_DESC(테이블명 인덱스명[기본키 설정시 제약조건명으로 인덱스 자동 생성]) */ -->
+	<!--rownum: SQL이 실행된 결과에 넘버링해준다. -->
+	<select id="boardList" parameterType="board" resultType="board">
+		<![CDATA[
+		select 
+			b_num, b_name, b_title, to_char(b_date, 'YYYY-MM-DD') as b_date, readcnt, b_file, b_thumb
+		from (
+				select /*+ index_desc(spring_board spring_board_pk) */
+					rownum as rnum, b_num, b_name, b_title, b_date, readcnt, b_file, b_thumb
+				from spring_board
+				where ]]>
+				<trim prefix="(" suffix=") and " prefixOverrides="and">
+					<include refid="boardSearch"></include>
+				</trim>
+			<![CDATA[ rownum <= #{pageNum} * #{amount}
+			 ) boardlist
+		where rnum > (#{pageNum} - 1) * #{amount}
+		]]>
+	</select>
+	
+	<!-- 전체 레코드 수 조회 -->
+	<select id="boardListCnt" parameterType="board" resultType="int">
+		select count(*) from spring_board
+		<trim prefix=" where (" suffix=")">
+			<include refid="boardSearch"></include>
+		</trim>
+	</select>
+
+	<!-- 게시물 등록 -2  -->
+	<insert id="baordInsert" parameterType="board" >
+		<selectKey keyProperty="b_num" resultType="int" order="BEFORE">
+			select spring_board_seq.nextval from dual
+		</selectKey>
+		
+		insert into spring_board(b_num, b_name, b_title, b_content, b_pwd, b_file, b_thumb)
+		values(#{b_num}, #{b_name}, #{b_title}, #{b_content}, #{b_pwd}, #{b_file}, #{b_thumb})
+	</insert>
+	
+	<select id="boardDetail" resultType="board" parameterType="board">
+	/* Board - boardDetail */
+		select b_num, b_name, b_title, b_content, 
+			   to_char(b_date, 'YYYY-MM-DD HH24:MI:SS') as b_date, readcnt, b_file, b_thumb
+		from spring_board
+		where b_num = #{b_num}
+	</select>
+	
+	<update id="readCntUpdate" parameterType="board">
+		/* Board - readCntUpdate */
+		UPDATE spring_board
+		SET readcnt = readcnt + 1
+		WHERE b_num = #{b_num}
+	</update>
+	
+	<!-- 해당 번호의 비밀번호 확인 -->
+	<select id="pwdConfirm" parameterType="board" resultType="int">
+		/*Board - pwdConfirm*/
+		select nvl((
+				select 1 from spring_board 
+				where b_num = #{b_num} and b_pwd = #{b_pwd}
+				),0) as state
+		from dual
+	</select>
+	
+	<!-- 게시물 수정 -->
+	<update id="boardUpdate" parameterType="board">
+	/* Board - boardUpdate */
+		update spring_board
+		set b_title = #{b_title},
+			b_content = #{b_content},
+			b_date = sysdate
+			<if test="b_pwd != ''"><!-- BoardVO 의 b_pwd 초기값이 "" 이기 때문에 null로 하지 않음. -->
+				, b_pwd = #{b_pwd}
+			</if>
+			<if test="b_thumb != ''">
+				, b_thumb = #{b_thumb}
+			</if>
+			<if test="b_file != ''">
+				, b_file = #{b_file}
+			</if>
+		where b_num = #{b_num}
+			
+	</update>
+	
+	<!-- 게시물 삭제 -->
+	<delete id="boardDelete" parameterType="board">
+		/* Board - boardDelete */
+		delete from spring_board where b_num = #{b_num}
+	</delete>
+	
+
+	
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+  
+<tiles-definitions>
+	<!-- 여기를 설 정 해 주어야 헤더와 풋터가 보인다.. -->
+
+	<definition name="intro" template="/WEB-INF/views/template/client/mainLayout.jsp">
+		<put-attribute name="title" value="나의 첫 스프링 사이트" />
+		<put-attribute name="header" value="/WEB-INF/views/template/client/header.jsp" />
+		<put-attribute name="footer" value="/WEB-INF/views/template/client/footer.jsp" />
+	</definition>
+	
+	<definition name="content" template="/WEB-INF/views/template/client/contentLayout.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/template/client/header.jsp" />
+		<put-attribute name="title" value="나의 첫 스프링 사이트" />
+		<put-attribute name="body" value="" />
+		<put-attribute name="footer" value="/WEB-INF/views/template/client/footer.jsp" />
+	</definition>
+	
+	<definition name="client/board/*" extends="content"> <!-- content의 내용을 확장하겠다. -->
+		<!--그대로 사용하지 않을것만 아래에 재정의 하는 것이다. -->
+		<put-attribute name="title" value="기본 게시판" /> 
+		<put-attribute name="body" value="/WEB-INF/views/client/board/{1}.jsp" />
+	</definition>
+	
+			<!-- name 은 controller가 반환해주는 값 -->
+	<definition name="data/*" extends="content"> 
+		<put-attribute name="title" value="충남 게시판" /> 
+		<put-attribute name="body" value="/WEB-INF/views/data/{1}.jsp" />
+	</definition>
+	
+	<definition name="error/*" extends="content"> 
+		<put-attribute name="title" value="" /> 
+		<put-attribute name="body" value="/WEB-INF/views/error/{1}.jsp" />
+	</definition>
+	
+	<!-- 메뉴가 추가될때 마다 위의 내용을 정의한다 -->
+	
+</tiles-definitions>
